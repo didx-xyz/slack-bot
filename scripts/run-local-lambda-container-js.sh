@@ -2,7 +2,7 @@
 set -xuev
 # Starts official aws runtime container with lambda code inside
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 source_dir=$SCRIPT_DIR/../lambda/.js/target/scala-3.3.0/scalajs-bundler/main
 handler=lambda-fastopt-bundle.myJsHandler

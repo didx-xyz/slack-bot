@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -xuev
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-manifest="$( cat ${SCRIPT_DIR}/../resources/slack-manifest.json  | envsubst )"
+manifest="$(cat ${SCRIPT_DIR}/../resources/slack-manifest.json | envsubst)"
 
 echo $manifest
 
