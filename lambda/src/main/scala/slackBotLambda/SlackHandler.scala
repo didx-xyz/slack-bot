@@ -31,7 +31,10 @@ object SlackHandler {
   }
 
   private def getBotToken: EitherT[IO, Output, String] = {
-    EitherT.fromOptionF(cats.effect.std.Env[IO].get("SLACK_BOT_TOKEN"), Output("Missing slack token"))
+    EitherT.fromOptionF(
+      cats.effect.std.Env[IO].get("SLACK_BOT_TOKEN"),
+      Output("Missing slack token")
+    )
   }
 
   private def getUserId(requestBody: String): EitherT[IO, Output, String] = {
@@ -49,12 +52,15 @@ object SlackHandler {
       response <- EitherT.liftF(IO.fromFuture(IO(request.send(backend))))
       parsed   <- EitherT.fromEither(
                     Try(ujson.read(response.body)).toEither.left
-                      .map(e => Output(e.getMessage)),
+                      .map(e => Output(e.getMessage))
                   )
       _        <- EitherT.fromEither(
                     Try(parsed("ok").bool).toEither.left
                       .map(e => Output(e.getMessage))
-                      .flatMap(isOk => Either.cond(isOk, (), Output(s"Failure in communicating with slack: ${response.body}"))),
+                      .flatMap(isOk =>
+                        Either
+                          .cond(isOk, (), Output(s"Failure in communicating with slack: ${response.body}"))
+                      )
                   )
     } yield ujson.read(response.body)
   }

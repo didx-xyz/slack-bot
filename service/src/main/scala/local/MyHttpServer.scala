@@ -19,7 +19,9 @@ object MyHttpServer extends IOApp.Simple {
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"9876")
-      .withHttpApp(Logger.httpApp(logHeaders = true, logBody = true)(errorLogging(routes.orNotFound)))
+      .withHttpApp(
+        Logger.httpApp(logHeaders = true, logBody = true)(errorLogging(routes.orNotFound))
+      )
       .build
       .void
       .useForever
@@ -29,7 +31,7 @@ object MyHttpServer extends IOApp.Simple {
     val dsl = new Http4sDsl[IO] {}
     import dsl.*
     HttpRoutes.of[IO] {
-      case GET -> Root / "hello"        => Ok("world")
+      case GET -> Root / "hello"         => Ok("world")
       case req @ POST -> Root / "lambda" =>
         for {
           input  <- requestToLambdaInput(req)
@@ -49,8 +51,8 @@ object MyHttpServer extends IOApp.Simple {
     ErrorAction.log(
       route,
       messageFailureLogAction = (t, msg) => IO(scribe.error(msg, t)),
-      serviceErrorLogAction = (t, msg) => IO(scribe.error(msg, t)),
-    ),
+      serviceErrorLogAction = (t, msg) => IO(scribe.error(msg, t))
+    )
   )
 
 }

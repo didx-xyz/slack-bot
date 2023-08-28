@@ -16,13 +16,14 @@ object JsHandler {
   val handler: js.Function2[APIGatewayProxyEvent, Context, js.Promise[APIGatewayProxyResult]] = {
     (event: APIGatewayProxyEvent, _: Context) =>
       import js.JSConverters.*
-      implicit val ior: IORuntime = IORuntime.global
+      implicit val ior: IORuntime               = IORuntime.global
       implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
       scribe.info(s"Received: ${event}")
       scribe.info(s"Received: ${JSON.stringify(event, null, 2)}")
 
-      val strBody = if(event.isBase64Encoded) new String(Base64.getDecoder.decode(event.body)) else event.body
+      val strBody =
+        if (event.isBase64Encoded) new String(Base64.getDecoder.decode(event.body)) else event.body
 
       SlackHandler
         .run(SlackHandler.Input(strBody))
@@ -30,7 +31,7 @@ object JsHandler {
           APIGatewayProxyResult(
             statusCode = 200,
             body = out.body,
-            headers = js.defined(js.Dictionary("Content-Type" -> "text/plain")),
+            headers = js.defined(js.Dictionary("Content-Type" -> "text/plain"))
           ),
         )
         .unsafeToFuture()
