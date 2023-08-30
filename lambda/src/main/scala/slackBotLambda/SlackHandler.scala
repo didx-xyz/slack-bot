@@ -30,6 +30,22 @@ object SlackHandler {
     response.merge
   }
 
+  private def handleFileCommand(event: Input): IO[Output] = {
+    scribe.info(s"Handling file command from event: ${event.body}")
+    val response: EitherT[IO, Output, Output] = for {
+      channelId <- getChannelId(event.body)
+      botToken  <- getBotToken
+      response  <- fetchFileList(channelId, botToken)
+      _          = scribe.info(s"Slack response: ${response}")
+    } yield {
+      val listOfFiles = response("files").arr
+      val file        = listOfFiles.last
+      val fileId      = file("id").str
+      val fileLink    = file("permalink").str
+      Output(s"File ID: $fileId, File Public Link: $fileLink")
+    }
+    response.merge
+  }
   private def getBotToken: EitherT[IO, Output, String] = {
     EitherT.fromOptionF(
       cats.effect.std.Env[IO].get("SLACK_BOT_TOKEN"),

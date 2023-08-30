@@ -18,6 +18,12 @@
         "url": "${WEBHOOK_URL}",
         "description": "Say hello",
         "should_escape": false
+      },
+      {
+        "command": "/file",
+        "url": "${WEBHOOK_URL}",
+        "description": "Send file ",
+        "should_escape": false
       }
     ]
   },
