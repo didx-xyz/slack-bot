@@ -1,6 +1,6 @@
 {
   "display_information": {
-    "name": "Scala Slack Bot"
+    "name": "Testing DIDx Slack Bot"
   },
   "features": {
     "app_home": {
@@ -9,7 +9,7 @@
       "messages_tab_read_only_enabled": false
     },
     "bot_user": {
-      "display_name": "Scala Slack Bot",
+      "display_name": "TestBot",
       "always_online": false
     },
     "slash_commands": [
