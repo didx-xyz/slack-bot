@@ -4,7 +4,7 @@ ThisBuild / scalaVersion := "3.3.0"
 
 lazy val root = project
   .in(file("."))
-  .settings(name := "scala-slack-bot")
+  .settings(name := "didx-slack-bot")
   .aggregate(lambda.js, lambda.jvm, `service`.js, `service`.jvm)
 
 lazy val lambda = crossProject(JSPlatform, JVMPlatform)
