@@ -88,6 +88,29 @@ object SlackHandler {
     }
     response.merge
   }
+
+  private def handleMessage(event: Input): IO[Output] = {
+    scribe.info(s"Handling direct message with event body: ${event.body}")
+    val parsedJson: Json                      = parseJson(event.body)
+    val response: EitherT[IO, Output, Output] = for {
+      channelId <- EitherT.fromOption[IO](
+                     parsedJson.findAllByKey("channel").head.asString,
+                     Output("Error getting ChannelId")
+                   )
+      botToken  <- getBotToken
+      input     <- EitherT.fromOption[IO](
+                     parsedJson.findAllByKey("event").head.findAllByKey("text").head.asString,
+                     Output("Error")
+                   )
+      message    = s"Echo: $input"
+      response  <- sendDirectMessage(channelId, message, botToken)
+      _          = scribe.info(s"Slack response: ${response}")
+    } yield {
+      Output("Message sent")
+    }
+    response.merge
+  }
+
   private def getBotToken: EitherT[IO, Output, String] = {
     EitherT.fromOptionF(
       cats.effect.std.Env[IO].get("SLACK_BOT_TOKEN"),
@@ -116,6 +139,56 @@ object SlackHandler {
   private def fetchUserInfo(userId: String, token: String): EitherT[IO, Output, ujson.Value] = {
     val request = basicRequest
       .get(uri"https://slack.com/api/users.info?&user=${userId}")
+      .auth
+      .bearer(token)
+      .response(asStringAlways)
+    for {
+      response <- EitherT.liftF(IO.fromFuture(IO(request.send(backend))))
+      parsed   <- EitherT.fromEither(
+                    Try(ujson.read(response.body)).toEither.left
+                      .map(e => Output(e.getMessage))
+                  )
+      _        <- EitherT.fromEither(
+                    Try(parsed("ok").bool).toEither.left
+                      .map(e => Output(e.getMessage))
+                      .flatMap(isOk =>
+                        Either
+                          .cond(isOk, (), Output(s"Failure in communicating with slack: ${response.body}"))
+                      )
+                  )
+    } yield ujson.read(response.body)
+  }
+
+  private def sendDirectMessage(
+      channelId: String,
+      text: String,
+      token: String
+  ): EitherT[IO, Output, ujson.Value] = {
+    val request = basicRequest
+      .get(uri"https://slack.com/api/chat.postMessage?&channel=${channelId}&text=${text}")
+      .auth
+      .bearer(token)
+      .response(asStringAlways)
+    for {
+      response <- EitherT.liftF(IO.fromFuture(IO(request.send(backend))))
+      parsed   <- EitherT.fromEither(
+                    Try(ujson.read(response.body)).toEither.left
+                      .map(e => Output(e.getMessage))
+                  )
+      _        <- EitherT.fromEither(
+                    Try(parsed("ok").bool).toEither.left
+                      .map(e => Output(e.getMessage))
+                      .flatMap(isOk =>
+                        Either
+                          .cond(isOk, (), Output(s"Failure in communicating with slack: ${response.body}"))
+                      )
+                  )
+    } yield ujson.read(response.body)
+  }
+
+  private def fetchFileList(channelId: String, token: String): EitherT[IO, Output, ujson.Value] = {
+    val request = basicRequest
+      .get(uri"https://slack.com/api/files.list?&channel=${channelId}")
       .auth
       .bearer(token)
       .response(asStringAlways)
