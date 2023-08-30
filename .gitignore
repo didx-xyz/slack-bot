@@ -13,3 +13,5 @@ target/
 .bsp
 .bloop
 metals.sbt
+
+node_modules
