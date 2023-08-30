@@ -54,8 +54,9 @@ object SlackHandler {
   }
 
   private def getUserId(requestBody: String): EitherT[IO, Output, String] = {
-    val parsed = parseUrlParams(requestBody)
-    EitherT.fromOption(parsed.get("user_id"), Output("Malformed request"))
+    val parsed = parseCommandUrlParams(requestBody)
+    EitherT.fromOption(parsed.get("user_id"), Output("Couldn't get UserId"))
+  }
   }
 
   private def fetchUserInfo(userId: String, token: String): EitherT[IO, Output, ujson.Value] = {
@@ -81,7 +82,7 @@ object SlackHandler {
     } yield ujson.read(response.body)
   }
 
-  def parseUrlParams(body: String): Map[String, String] = {
+  def parseCommandUrlParams(body: String): Map[String, String] = {
     body
       .split("&")
       .collect { case s"$key=$value" => key -> URLDecoder.decode(value, "UTF-8") }
