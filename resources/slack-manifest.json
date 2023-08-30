@@ -32,6 +32,7 @@
       "bot": [
         "commands",
         "chat:write",
+        "im:history",
       ]
     }
   },
