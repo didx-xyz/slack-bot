@@ -10,7 +10,7 @@
     },
     "bot_user": {
       "display_name": "TestBot",
-      "always_online": false
+      "always_online": true
     },
     "slash_commands": [
       {
