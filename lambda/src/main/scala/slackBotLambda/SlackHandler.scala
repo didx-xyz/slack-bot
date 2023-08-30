@@ -102,6 +102,10 @@ object SlackHandler {
     val parsed = parseCommandUrlParams(requestBody)
     EitherT.fromOption(parsed.get("user_id"), Output("Couldn't get UserId"))
   }
+
+  private def getChannelId(requestBody: String): EitherT[IO, Output, String] = {
+    val parsed = parseCommandUrlParams(requestBody)
+    EitherT.fromOption(parsed.get("channel_id"), Output("Couldn't get ChannelId"))
   }
 
   private def fetchUserInfo(userId: String, token: String): EitherT[IO, Output, ujson.Value] = {
