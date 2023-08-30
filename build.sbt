@@ -14,10 +14,10 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
   .settings(
     name              := "lambda",
     libraryDependencies ++= Seq(
-      "org.typelevel"                 %%% "cats-effect" % "3.5.1",
-      "com.softwaremill.sttp.client4" %%% "core"        % "4.0.0-M2",
-      "com.outr"                      %%% "scribe"      % "3.11.8",
-      "com.lihaoyi"                   %%% "upickle"     % "3.1.2"
+      "org.typelevel"                 %%% "cats-effect"   % "3.5.1",
+      "com.softwaremill.sttp.client4" %%% "core"          % "4.0.0-M4",
+      "com.outr"                      %%% "scribe"        % "3.12.0",
+      "com.lihaoyi"                   %%% "upickle"       % "3.1.2",
     ),
     topLevelDirectory := None // required for AWS to accept the zip
   )
@@ -45,8 +45,8 @@ lazy val `service` = crossProject(JSPlatform, JVMPlatform)
   .dependsOn(lambda)
   .settings(
     libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-ember-server" % "0.23.22",
-      "org.http4s" %%% "http4s-dsl"          % "0.23.22"
+      "org.http4s" %%% "http4s-ember-server" % "0.23.23",
+      "org.http4s" %%% "http4s-dsl"          % "0.23.23"
     )
   )
   .jsSettings(
@@ -63,7 +63,7 @@ lazy val `service` = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(
     Revolver.enableDebugging(),
     libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.4.7" % Runtime
+      "ch.qos.logback" % "logback-classic" % "1.4.11" % Runtime
     ),
     dockerBaseImage := "openjdk:17"
   )
