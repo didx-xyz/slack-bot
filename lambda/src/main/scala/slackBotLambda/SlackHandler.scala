@@ -18,8 +18,21 @@ object SlackHandler {
 
   val backend = DefaultFutureBackend()
 
+  val verifyUrl: String = "url_verification"
+
   def run(event: Input): IO[Output] = {
     scribe.info(s"Received call: ${event.body}")
+
+  /*Verify ownership of the Events API subscription URL (event_subscriptions.request_url in app manifest)*/
+  private def handleChallengeRequest(event: Input): IO[Output] = {
+    scribe.info(s"Handling challenge request from event: ${event.body}")
+    val response: EitherT[IO, Output, Output] = for {
+      challenge <- readChallenge(event.body)
+    } yield {
+      Output(challenge)
+    }
+    response.merge
+  }
     val response: EitherT[IO, Output, Output] = for {
       userId   <- getUserId(event.body)
       botToken <- getBotToken
@@ -52,6 +65,14 @@ object SlackHandler {
     EitherT.fromOptionF(
       cats.effect.std.Env[IO].get("SLACK_BOT_TOKEN"),
       Output("Missing slack token")
+    )
+  }
+
+  private def readChallenge(requestBody: String): EitherT[IO, Output, String] = {
+    val parsed = parseJson(requestBody)
+    EitherT.fromOption(
+      parsed.findAllByKey("challenge").head.asString,
+      Output("Couldn't read challenge")
     )
   }
 
