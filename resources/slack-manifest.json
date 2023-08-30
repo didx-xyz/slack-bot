@@ -33,6 +33,7 @@
         "commands",
         "chat:write",
         "im:history",
+        "users:read",
       ]
     }
   },
