@@ -68,7 +68,7 @@ lazy val `service` = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % "1.4.11" % Runtime
     ),
-    dockerBaseImage := "openjdk:17"
+    dockerBaseImage := "openjdk:20"
   )
   .settings(
     Docker / packageName := "scala-slack-bot",
