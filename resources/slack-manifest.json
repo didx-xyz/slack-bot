@@ -41,6 +41,12 @@
   "settings": {
     "org_deploy_enabled": false,
     "socket_mode_enabled": false,
-    "token_rotation_enabled": false
+    "token_rotation_enabled": false,
+    "event_subscriptions": {
+      "request_url": "${WEBHOOK_URL}",
+      "bot_events": [
+        "message.im"
+      ]
+    }
   }
 }
