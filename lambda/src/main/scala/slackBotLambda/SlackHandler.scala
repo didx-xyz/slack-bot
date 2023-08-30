@@ -1,13 +1,15 @@
 package slackBotLambda
 
 import cats.data.EitherT
-import cats.effect.{IO, Outcome}
+import io.circe.generic.auto._
+import io.circe.parser._
 import sttp.client4.*
 import ujson.Value.Value
 
 import java.net.URLDecoder
 import scala.util.Try
 import scala.util.chaining.scalaUtilChainingOps
+import io.circe.Json
 
 object SlackHandler {
 
@@ -87,6 +89,19 @@ object SlackHandler {
       .split("&")
       .collect { case s"$key=$value" => key -> URLDecoder.decode(value, "UTF-8") }
       .toMap
+  }
+
+  def parseJson(body: String): Json = {
+    val parsed = parse(body)
+
+    parsed match {
+      case Left(failure) => {
+        scribe.error(s"Failed to parse json from body: $body")
+        Json.Null
+      }
+      case Right(json)   =>
+        json
+    }
   }
 
 }
