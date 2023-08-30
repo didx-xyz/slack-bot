@@ -1,6 +1,8 @@
 package slackBotLambda
 
 import cats.data.EitherT
+import cats.effect.IO
+import cats.effect.Outcome
 import io.circe.generic.auto._
 import io.circe.parser._
 import sttp.client4.*
@@ -55,6 +57,9 @@ object SlackHandler {
     }
     response.merge
   }
+
+  private def handleHelloCommand(event: Input): IO[Output] = {
+    scribe.info(s"Handling hello command from event: ${event.body}")
     val response: EitherT[IO, Output, Output] = for {
       userId   <- getUserId(event.body)
       botToken <- getBotToken
