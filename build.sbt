@@ -18,6 +18,9 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
       "com.softwaremill.sttp.client4" %%% "core"          % "4.0.0-M4",
       "com.outr"                      %%% "scribe"        % "3.12.0",
       "com.lihaoyi"                   %%% "upickle"       % "3.1.2",
+      "io.circe"                       %% "circe-core"    % "0.14.5",
+      "io.circe"                       %% "circe-generic" % "0.14.5",
+      "io.circe"                       %% "circe-parser"  % "0.14.5"
     ),
     topLevelDirectory := None // required for AWS to accept the zip
   )
