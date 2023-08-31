@@ -93,7 +93,7 @@ object SlackHandler {
     val parsedJson: Json                      = parseJson(event.body)
     val response: EitherT[IO, Output, Output] = for {
       channelId <- EitherT.fromOption[IO](
-                     parsedJson.hcursor.downField("channel").as[String].toOption,
+                     parsedJson.hcursor.downField("event").downField("channel").as[String].toOption,
                      Output("Error getting ChannelId")
                    )
       botToken  <- getBotToken
