@@ -89,8 +89,15 @@ object SlackHandler {
   }
 
   private def handleMessage(event: Input): IO[Output] = {
-    scribe.info(s"Handling direct message with event body: ${event.body}")
-    val parsedJson: Json                      = parseJson(event.body)
+    val parsedJson: Json = parseJson(event.body)
+
+    parsedJson.hcursor.downField("event").downField("bot_id").as[String] match {
+      case Right(_) =>
+        // scribe.info(s"Ignoring event triggered by bot: ${event.body}")
+        return IO.pure(Output("Ignoring bot message"))
+      case _        => scribe.info(s"Handling direct message with event body: ${event.body}")
+    }
+
     val response: EitherT[IO, Output, Output] = for {
       channelId <- EitherT.fromOption[IO](
                      parsedJson.hcursor.downField("event").downField("channel").as[String].toOption,
