@@ -24,26 +24,25 @@ object SlackHandler {
 
   def run(event: Input): IO[Output] = {
     scribe.info(s"Received call: ${event.body}")
-    val command = parseCommand(event)
-    command match {
+    val eventType = parseEvent(event)
+    eventType match {
       case `verifyUrl` => handleChallengeRequest(event)
+      case "message"   => handleMessage(event)
       case "/hello"    => handleHelloCommand(event)
       case "/file"     => handleFileCommand(event)
-      case "message"   => handleMessage(event)
       case _           => IO.pure(Output("Unknown command"))
     }
   }
 
-  private def parseCommand(event: Input): String = {
-    if event.body
-        .contains(verifyUrl) && parseJson(event.body).findAllByKey("type").head.asString == Some(
-        verifyUrl
-      )
-    then { verifyUrl }
-    else if event.body.contains(""""type":"message"""") then "message"
-    else {
-      val parsed = parseCommandUrlParams(event.body)
-      parsed.getOrElse("command", "undefined")
+  private def parseEvent(event: Input): String = {
+    val parsedJson = parse(event.body)
+
+    parsedJson match {
+      case Right(json) =>
+        json.hcursor.downField("event").downField("type").as[String].getOrElse("undefined type")
+      case _           =>
+        val parsed = parseCommandUrlParams(event.body)
+        parsed.getOrElse("command", "undefined command")
     }
   }
 
