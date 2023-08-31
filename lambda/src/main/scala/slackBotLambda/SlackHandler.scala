@@ -3,6 +3,7 @@ package slackBotLambda
 import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.Outcome
+import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
 import sttp.client4.*
@@ -11,7 +12,6 @@ import ujson.Value.Value
 import java.net.URLDecoder
 import scala.util.Try
 import scala.util.chaining.scalaUtilChainingOps
-import io.circe.Json
 
 object SlackHandler {
 
@@ -93,12 +93,12 @@ object SlackHandler {
     val parsedJson: Json                      = parseJson(event.body)
     val response: EitherT[IO, Output, Output] = for {
       channelId <- EitherT.fromOption[IO](
-                     parsedJson.findAllByKey("channel").head.asString,
+                     parsedJson.hcursor.downField("channel").as[String].toOption,
                      Output("Error getting ChannelId")
                    )
       botToken  <- getBotToken
       input     <- EitherT.fromOption[IO](
-                     parsedJson.findAllByKey("event").head.findAllByKey("text").head.asString,
+                     parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
                      Output("Error")
                    )
       message    = s"Echo: $input"
@@ -120,7 +120,7 @@ object SlackHandler {
   private def readChallenge(requestBody: String): EitherT[IO, Output, String] = {
     val parsed = parseJson(requestBody)
     EitherT.fromOption(
-      parsed.findAllByKey("challenge").head.asString,
+      parsed.hcursor.downField("challenge").as[String].toOption,
       Output("Couldn't read challenge")
     )
   }
