@@ -30,6 +30,7 @@ object SlackHandler {
       case "message"     => handleMessage(event)
       case "/hello"      => handleHelloCommand(event)
       case "/file"       => handleFileCommand(event)
+      case "/create-did" => handleCreateDidCommand(event)
       case _             => IO.pure(Output("Unknown command"))
     }
   }
@@ -84,6 +85,17 @@ object SlackHandler {
       val fileId      = file("id").str
       val fileLink    = file("permalink").str
       Output(s"File ID: $fileId, File Public Link: $fileLink")
+    }
+    response.merge
+  }
+
+  private def handleCreateDidCommand(event: Input): IO[Output] = {
+    scribe.info(s"Handling create DID command from event: ${event.body}")
+    val response: EitherT[IO, Output, Output] = for {
+      response <- createDid()
+      _         = scribe.info(s"Slack response: ${response}")
+    } yield {
+      Output(s"Created DID: $response")
     }
     response.merge
   }
@@ -210,6 +222,33 @@ object SlackHandler {
                       .flatMap(isOk =>
                         Either
                           .cond(isOk, (), Output(s"Failure in communicating with slack: ${response.body}"))
+                      )
+                  )
+    } yield ujson.read(response.body)
+  }
+
+  private def createDid(): EitherT[IO, Output, ujson.Value] = {
+    val request = basicRequest
+      .post(uri"http://localhost:8100/wallet/dids")
+      .header("x-api-key", "governance.adminApiKey")
+      .response(asStringAlways)
+
+    for {
+      response <- EitherT.liftF(IO.fromFuture(IO(request.send(backend))))
+      parsed   <- EitherT.fromEither(
+                    Try(ujson.read(response.body)).toEither.left
+                      .map(e => Output(e.getMessage))
+                  )
+      _        <- EitherT.fromEither(
+                    Try(parsed("did").str).toEither.left
+                      .map(e => Output(e.getMessage))
+                      .flatMap(s =>
+                        Either
+                          .cond(
+                            s.nonEmpty,
+                            (),
+                            Output(s"Failure in communicating with slack: ${response.body}")
+                          )
                       )
                   )
     } yield ujson.read(response.body)

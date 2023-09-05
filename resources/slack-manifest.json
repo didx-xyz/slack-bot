@@ -22,7 +22,13 @@
       {
         "command": "/file",
         "url": "${WEBHOOK_URL}",
-        "description": "Send file ",
+        "description": "Send file",
+        "should_escape": false
+      },
+      {
+        "command": "/create-did",
+        "url": "${WEBHOOK_URL}",
+        "description": "Create did with CloudAPI",
         "should_escape": false
       }
     ]
