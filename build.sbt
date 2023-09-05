@@ -1,5 +1,6 @@
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
+val circeVersion = "0.14.5"
 ThisBuild / scalaVersion := "3.3.0"
 
 lazy val root = project
@@ -14,13 +15,9 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
   .settings(
     name              := "lambda",
     libraryDependencies ++= Seq(
-      "org.typelevel"                 %%% "cats-effect"   % "3.5.1",
-      "com.softwaremill.sttp.client4" %%% "core"          % "4.0.0-M4",
-      "com.outr"                      %%% "scribe"        % "3.12.0",
-      "com.lihaoyi"                   %%% "upickle"       % "3.1.2",
-      "io.circe"                       %% "circe-core"    % "0.14.5",
-      "io.circe"                       %% "circe-generic" % "0.14.5",
-      "io.circe"                       %% "circe-parser"  % "0.14.5"
+      "io.circe"                       %% "circe-core"        % circeVersion,
+      "io.circe"                       %% "circe-generic"     % circeVersion,
+      "io.circe"                       %% "circe-parser"      % circeVersion,
     ),
     topLevelDirectory := None // required for AWS to accept the zip
   )
