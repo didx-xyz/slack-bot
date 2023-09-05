@@ -1,6 +1,8 @@
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 val circeVersion = "0.14.5"
+val xebiaVersion = "0.3.0"
+
 ThisBuild / scalaVersion := "3.3.0"
 
 lazy val root = project
@@ -18,6 +20,10 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
       "io.circe"                       %% "circe-core"        % circeVersion,
       "io.circe"                       %% "circe-generic"     % circeVersion,
       "io.circe"                       %% "circe-parser"      % circeVersion,
+      "com.xebia"                      %% "xef-scala"         % xebiaVersion,
+      "com.xebia"                       % "xef-pdf"           % xebiaVersion % "runtime",
+      "com.xebia"                       % "xef-reasoning-jvm" % xebiaVersion,
+      "com.xebia"                       % "xef-openai"        % xebiaVersion % "runtime" pomOnly ()
     ),
     topLevelDirectory := None // required for AWS to accept the zip
   )
