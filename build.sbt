@@ -1,7 +1,7 @@
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 val circeVersion = "0.14.5"
-val xebiaVersion = "0.3.0"
+val xebiaVersion = "0.0.3"
 
 ThisBuild / scalaVersion := "3.3.0"
 
