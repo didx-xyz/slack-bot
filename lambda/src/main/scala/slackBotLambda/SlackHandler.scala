@@ -3,6 +3,10 @@ package slackBotLambda
 import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.Outcome
+import com.xebia.functional.xef.prompt.JvmPromptBuilder
+import com.xebia.functional.xef.prompt.Prompt
+import com.xebia.functional.xef.scala.conversation.*
+import io.circe.Decoder
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
@@ -105,7 +109,7 @@ object SlackHandler {
 
     parsedJson.hcursor.downField("event").downField("bot_id").as[String] match {
       case Right(_) =>
-        // scribe.info(s"Ignoring event triggered by bot: ${event.body}")
+        scribe.info(s"Ignoring event triggered by bot.")
         return IO.pure(Output("Ignoring bot message"))
       case _        => scribe.info(s"Handling direct message with event body: ${event.body}")
     }
@@ -120,7 +124,7 @@ object SlackHandler {
                      parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
                      Output("Error")
                    )
-      message    = s"Echo: $input"
+      message    = getAiResponse(input)
       response  <- sendDirectMessage(channelId, message, botToken)
       _          = scribe.info(s"Slack response: ${response}")
     } yield {
@@ -252,6 +256,24 @@ object SlackHandler {
                       )
                   )
     } yield ujson.read(response.body)
+  }
+
+  private def getAiResponse(input: String): String = {
+    conversation {
+      val builder = new JvmPromptBuilder()
+        .addSystemMessage(
+          "You are an onboarding assistant. " +
+            "Your assignment is to obtain the following info from the user: " +
+            "Full Name; Email; Cellphone. " +
+            "Be courteous."
+        )
+        .addUserMessage(
+          input
+        )
+
+      val response = promptMessage(builder.build())
+      response
+    }
   }
 
   def parseCommandUrlParams(body: String): Map[String, String] = {
