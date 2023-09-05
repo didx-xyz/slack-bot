@@ -26,11 +26,11 @@ object SlackHandler {
     scribe.info(s"Received call: ${event.body}")
     val eventType = parseEvent(event)
     eventType match {
-      case `verifyUrl` => handleChallengeRequest(event)
-      case "message"   => handleMessage(event)
-      case "/hello"    => handleHelloCommand(event)
-      case "/file"     => handleFileCommand(event)
-      case _           => IO.pure(Output("Unknown command"))
+      case `verifyUrl`   => handleChallengeRequest(event)
+      case "message"     => handleMessage(event)
+      case "/hello"      => handleHelloCommand(event)
+      case "/file"       => handleFileCommand(event)
+      case _             => IO.pure(Output("Unknown command"))
     }
   }
 
