@@ -39,7 +39,7 @@ object MyHttpServer extends IOApp.Simple {
     val dsl = new Http4sDsl[IO] {}
     import dsl.*
     HttpRoutes.of[IO] {
-      case GET -> Root / "hello"         => Ok("world")
+      case GET -> Root / "hello"           => Ok("world")
       case req @ POST -> Root / "commands" =>
         for {
           input  <- requestToLambdaInput(req)
