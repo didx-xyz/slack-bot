@@ -1,14 +1,22 @@
 package local
 
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
+import cats.effect.IOApp
+import cats.effect.std.Queue
 import cats.syntax.all.*
 import com.comcast.ip4s.*
 import fs2.io.net.Network
+import org.http4s.Http
+import org.http4s.HttpRoutes
+import org.http4s.Request
+import org.http4s.Response
+import org.http4s.Status
 import org.http4s.dsl.Http4sDsl
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
-import org.http4s.server.middleware.{ErrorAction, ErrorHandling, Logger}
-import org.http4s.{Http, HttpRoutes, Request, Response, Status}
+import org.http4s.server.middleware.ErrorAction
+import org.http4s.server.middleware.ErrorHandling
+import org.http4s.server.middleware.Logger
 import slackBotLambda.SlackHandler
 
 object MyHttpServer extends IOApp.Simple {
