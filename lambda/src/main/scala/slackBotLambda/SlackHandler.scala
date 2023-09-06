@@ -113,18 +113,18 @@ object SlackHandler {
     }
 
     val response: EitherT[IO, Output, Output] = for {
-      channelId <- EitherT.fromOption[IO](
-                     parsedJson.hcursor.downField("event").downField("channel").as[String].toOption,
-                     Output("Error getting ChannelId")
-                   )
-      botToken  <- getBotToken
-      input     <- EitherT.fromOption[IO](
-                     parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
-                     Output("Error")
-                   )
-      message    = AiHandler.getAiResponse(input)
-      response  <- sendDirectMessage(channelId, message, botToken)
-      _          = scribe.info(s"Slack response: ${response}")
+      channelId  <- EitherT.fromOption[IO](
+                      parsedJson.hcursor.downField("event").downField("channel").as[String].toOption,
+                      Output("Error getting ChannelId")
+                    )
+      botToken   <- getBotToken
+      input      <- EitherT.fromOption[IO](
+                      parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
+                      Output("Error")
+                    )
+      message     = AiHandler.getAiResponse(input)
+      sendResult <- sendDirectMessage(channelId, message, botToken)
+      _           = scribe.info(s"Slack response: ${sendResult}")
     } yield {
       Output("Message sent")
     }
