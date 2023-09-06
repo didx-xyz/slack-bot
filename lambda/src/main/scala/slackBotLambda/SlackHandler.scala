@@ -50,7 +50,7 @@ object SlackHandler {
   }
 
   /*Verify ownership of the Events API subscription URL (event_subscriptions.request_url in app manifest)*/
-  private def handleChallengeRequest(event: Input): IO[Output] = {
+  def handleChallengeRequest(event: Input): IO[Output] = {
     scribe.info(s"Handling challenge request from event: ${event.body}")
     val response: EitherT[IO, Output, Output] = for {
       challenge <- readChallenge(event.body)
@@ -102,7 +102,7 @@ object SlackHandler {
     response.merge
   }
 
-  private def handleMessage(event: Input): IO[Output] = {
+  def handleMessage(event: Input): IO[Output] = {
     val parsedJson: Json = parseJson(event.body)
 
     parsedJson.hcursor.downField("event").downField("bot_id").as[String] match {
