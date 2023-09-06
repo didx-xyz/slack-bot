@@ -15,19 +15,19 @@
     "slash_commands": [
       {
         "command": "/hello",
-        "url": "${WEBHOOK_URL}",
+        "url": "${WEBHOOK_URL}/commands",
         "description": "Say hello",
         "should_escape": false
       },
       {
         "command": "/file",
-        "url": "${WEBHOOK_URL}",
+        "url": "${WEBHOOK_URL}/commands",
         "description": "Send file",
         "should_escape": false
       },
       {
         "command": "/create-did",
-        "url": "${WEBHOOK_URL}",
+        "url": "${WEBHOOK_URL}/commands",
         "description": "Create did with CloudAPI",
         "should_escape": false
       }

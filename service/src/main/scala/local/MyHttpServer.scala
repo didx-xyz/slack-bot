@@ -40,7 +40,7 @@ object MyHttpServer extends IOApp.Simple {
     import dsl.*
     HttpRoutes.of[IO] {
       case GET -> Root / "hello"         => Ok("world")
-      case req @ POST -> Root / "lambda" =>
+      case req @ POST -> Root / "commands" =>
         for {
           input  <- requestToLambdaInput(req)
           result <- SlackHandler.run(input)
