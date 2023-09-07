@@ -6,14 +6,19 @@ import com.xebia.functional.xef.scala.conversation.*
 import com.xebia.functional.xef.store.ConversationId
 import scala.collection.mutable
 import com.xebia.functional.xef.prompt.PromptBuilder
+import io.circe.Decoder
 
 case class OnboardingResult(
-    fullName: Option[String] = None,
-    email: Option[String] = None,
-    cellphone: Option[String] = None
-)
+    @Description("The next message that you want to send to the user") nextMessageToUser: String,
+    @Description("The full name as obtained from the user") fullName: Option[String] = None,
+    @Description("The email address as obtained from the user") email: Option[String] = None,
+    @Description("The cellphone number as obtained from the user") cellphone: Option[String] = None
+) derives SerialDescriptor,
+      Decoder
+
 object AiHandler {
   private def createBuilder(): PromptBuilder = {
+    // Describe AI agent's assignment
     new JvmPromptBuilder()
       .addSystemMessage(
         "You are an onboarding assistant. " +
@@ -44,9 +49,9 @@ object AiHandler {
     // Create a new conversation with the specific conversationId
     conversation(
       {
-        // Get the AI's response
-        val response = promptMessage(builder.build())
-        response
+        val result = prompt[OnboardingResult](builder.build())
+        scribe.info(f"We have the following onboarding result: $result")
+        result.nextMessageToUser
       },
       conversationId = Some(ConversationId(conversationId))
     )
