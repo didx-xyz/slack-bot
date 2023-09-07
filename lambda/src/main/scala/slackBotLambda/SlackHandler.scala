@@ -122,7 +122,7 @@ object SlackHandler {
                       parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
                       Output("Error")
                     )
-      message     = AiHandler.getAiResponse(input)
+      message     = AiHandler.getAiResponse(input, channelId)
       sendResult <- sendDirectMessage(channelId, message, botToken)
       _           = scribe.info(s"Slack response: ${sendResult}")
     } yield {
