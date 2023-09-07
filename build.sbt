@@ -1,5 +1,8 @@
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
+val circeVersion = "0.14.5"
+val xefVersion   = "0.0.3"
+
 ThisBuild / scalaVersion := "3.3.0"
 
 lazy val root = project
@@ -14,13 +17,17 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
   .settings(
     name              := "lambda",
     libraryDependencies ++= Seq(
-      "org.typelevel"                 %%% "cats-effect"   % "3.5.1",
-      "com.softwaremill.sttp.client4" %%% "core"          % "4.0.0-M4",
-      "com.outr"                      %%% "scribe"        % "3.12.0",
-      "com.lihaoyi"                   %%% "upickle"       % "3.1.2",
-      "io.circe"                       %% "circe-core"    % "0.14.5",
-      "io.circe"                       %% "circe-generic" % "0.14.5",
-      "io.circe"                       %% "circe-parser"  % "0.14.5"
+      "org.typelevel"                 %%% "cats-effect"       % "3.5.1",
+      "com.softwaremill.sttp.client4" %%% "core"              % "4.0.0-M4",
+      "com.outr"                      %%% "scribe"            % "3.12.0",
+      "com.lihaoyi"                   %%% "upickle"           % "3.1.2",
+      "io.circe"                       %% "circe-core"        % circeVersion,
+      "io.circe"                       %% "circe-generic"     % circeVersion,
+      "io.circe"                       %% "circe-parser"      % circeVersion,
+      "com.xebia"                      %% "xef-scala"         % xefVersion,
+      "com.xebia"                       % "xef-pdf"           % xefVersion % "runtime",
+      "com.xebia"                       % "xef-reasoning-jvm" % xefVersion,
+      "com.xebia"                       % "xef-openai"        % xefVersion % "runtime" pomOnly ()
     ),
     topLevelDirectory := None // required for AWS to accept the zip
   )

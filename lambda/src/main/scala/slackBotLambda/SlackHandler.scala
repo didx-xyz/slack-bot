@@ -3,9 +3,11 @@ package slackBotLambda
 import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.Outcome
+import io.circe.Decoder
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
+import slackBotLambda.AiHandler
 import sttp.client4.*
 import ujson.Value.Value
 
@@ -26,11 +28,12 @@ object SlackHandler {
     scribe.info(s"Received call: ${event.body}")
     val eventType = parseEvent(event)
     eventType match {
-      case `verifyUrl` => handleChallengeRequest(event)
-      case "message"   => handleMessage(event)
-      case "/hello"    => handleHelloCommand(event)
-      case "/file"     => handleFileCommand(event)
-      case _           => IO.pure(Output("Unknown command"))
+      case `verifyUrl`   => handleChallengeRequest(event)
+      case "message"     => handleMessage(event)
+      case "/hello"      => handleHelloCommand(event)
+      case "/file"       => handleFileCommand(event)
+      case "/create-did" => handleCreateDidCommand(event)
+      case _             => IO.pure(Output("Unknown command"))
     }
   }
 
@@ -47,7 +50,7 @@ object SlackHandler {
   }
 
   /*Verify ownership of the Events API subscription URL (event_subscriptions.request_url in app manifest)*/
-  private def handleChallengeRequest(event: Input): IO[Output] = {
+  def handleChallengeRequest(event: Input): IO[Output] = {
     scribe.info(s"Handling challenge request from event: ${event.body}")
     val response: EitherT[IO, Output, Output] = for {
       challenge <- readChallenge(event.body)
@@ -88,29 +91,40 @@ object SlackHandler {
     response.merge
   }
 
-  private def handleMessage(event: Input): IO[Output] = {
+  private def handleCreateDidCommand(event: Input): IO[Output] = {
+    scribe.info(s"Handling create DID command from event: ${event.body}")
+    val response: EitherT[IO, Output, Output] = for {
+      response <- createDid()
+      _         = scribe.info(s"Slack response: ${response}")
+    } yield {
+      Output(s"Created DID: $response")
+    }
+    response.merge
+  }
+
+  def handleMessage(event: Input): IO[Output] = {
     val parsedJson: Json = parseJson(event.body)
 
     parsedJson.hcursor.downField("event").downField("bot_id").as[String] match {
       case Right(_) =>
-        // scribe.info(s"Ignoring event triggered by bot: ${event.body}")
+        scribe.info(s"Ignoring event triggered by bot.")
         return IO.pure(Output("Ignoring bot message"))
       case _        => scribe.info(s"Handling direct message with event body: ${event.body}")
     }
 
     val response: EitherT[IO, Output, Output] = for {
-      channelId <- EitherT.fromOption[IO](
-                     parsedJson.hcursor.downField("event").downField("channel").as[String].toOption,
-                     Output("Error getting ChannelId")
-                   )
-      botToken  <- getBotToken
-      input     <- EitherT.fromOption[IO](
-                     parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
-                     Output("Error")
-                   )
-      message    = s"Echo: $input"
-      response  <- sendDirectMessage(channelId, message, botToken)
-      _          = scribe.info(s"Slack response: ${response}")
+      channelId  <- EitherT.fromOption[IO](
+                      parsedJson.hcursor.downField("event").downField("channel").as[String].toOption,
+                      Output("Error getting ChannelId")
+                    )
+      botToken   <- getBotToken
+      input      <- EitherT.fromOption[IO](
+                      parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
+                      Output("Error")
+                    )
+      message     = AiHandler.getAiResponse(input, channelId)
+      sendResult <- sendDirectMessage(channelId, message, botToken)
+      _           = scribe.info(s"Slack response: ${sendResult}")
     } yield {
       Output("Message sent")
     }
@@ -210,6 +224,33 @@ object SlackHandler {
                       .flatMap(isOk =>
                         Either
                           .cond(isOk, (), Output(s"Failure in communicating with slack: ${response.body}"))
+                      )
+                  )
+    } yield ujson.read(response.body)
+  }
+
+  private def createDid(): EitherT[IO, Output, ujson.Value] = {
+    val request = basicRequest
+      .post(uri"http://localhost:8100/wallet/dids")
+      .header("x-api-key", "governance.adminApiKey")
+      .response(asStringAlways)
+
+    for {
+      response <- EitherT.liftF(IO.fromFuture(IO(request.send(backend))))
+      parsed   <- EitherT.fromEither(
+                    Try(ujson.read(response.body)).toEither.left
+                      .map(e => Output(e.getMessage))
+                  )
+      _        <- EitherT.fromEither(
+                    Try(parsed("did").str).toEither.left
+                      .map(e => Output(e.getMessage))
+                      .flatMap(s =>
+                        Either
+                          .cond(
+                            s.nonEmpty,
+                            (),
+                            Output(s"Failure in communicating with slack: ${response.body}")
+                          )
                       )
                   )
     } yield ujson.read(response.body)
