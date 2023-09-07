@@ -47,22 +47,20 @@ object MyHttpServer extends IOApp.Simple {
         } yield lambdaOutputToResponse(result)
       case req @ POST -> Root / "events"   =>
         for {
-          input <- requestToLambdaInput(req)
-          a     <- input match {
-                     case _ if input.body.contains("url_verification") => {
-                       val challenge = SlackHandler.handleChallengeRequest(input)
-                       challenge.map(_.body)
-                     }
-                     case _                                            => {
-                       for {
-                         resource <- SlackHandler.handleMessage(input).background
-                       } yield ()
+          input  <- requestToLambdaInput(req)
+          result <- input match {
+                      case _ if input.body.contains("url_verification") => {
+                        val challenge = SlackHandler.handleChallengeRequest(input)
+                        challenge.map(_.body)
+                      }
+                      case _                                            => {
+                        for {
+                          _ <- SlackHandler.handleMessage(input).start
+                        } yield ""
+                      }
+                    }
 
-                       IO.pure("")
-                     }
-                   }
-
-        } yield Response[IO](Status.Ok).withEntity(a) // immediately respond with 200
+        } yield Response[IO](Status.Ok).withEntity(result) // immediately respond with 200
     }
   }
 
