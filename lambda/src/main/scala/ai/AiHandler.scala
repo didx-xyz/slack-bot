@@ -1,36 +1,22 @@
 package ai
 
-import com.xebia.functional.xef.prompt.PromptBuilder
-import com.xebia.functional.xef.prompt.Prompt
-import com.xebia.functional.xef.scala.conversation.*
-import com.xebia.functional.xef.store.ConversationId
-import scala.collection.mutable
-import ai.model.OnboardingResult
-import ai.model.AgentScript
+import ai.model.ChatState
+import ai.handler.OnboardingHandler
 
 object AiHandler {
-  // Define a map from conversationId to JvmPromptBuilder
-  private val builders: mutable.Map[String, PromptBuilder] = mutable.Map()
 
-  def getAiResponse(input: String, conversationId: String): String = {
-    scribe.info(s"Get AI response for message: $input, for conversationId: $conversationId")
-    // Get the builder for this conversationId, or create a new one if it doesn't exist
-    val builder = builders.getOrElseUpdate(
-      conversationId,
-      AgentScript.createOnboardingBuilder()
+  def getAiResponse(
+      input: String,
+      conversationId: String,
+      state: ChatState = ChatState.Onboarding
+  ): String = {
+    scribe.info(
+      s"Get AI response for message: $input, for conversationId: $conversationId, in state: $state"
     )
+    state match
+      case ChatState.Onboarding            => OnboardingHandler.getResponse(input, conversationId)
+      case ChatState.QueryingOpportunities => ???
+      case ChatState.Done                  => ???
 
-    // Add the user message to the builder
-    builder.addUserMessage(input)
-
-    // Create a new conversation with the specific conversationId
-    conversation(
-      {
-        val result = prompt[OnboardingResult](builder.build())
-        scribe.info(f"We have the following onboarding result: $result")
-        result.nextMessageToUser
-      },
-      conversationId = Some(ConversationId(conversationId))
-    )
   }
 }
