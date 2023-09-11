@@ -1,4 +1,4 @@
-package slackBotLambda
+package ai
 
 import com.xebia.functional.xef.prompt.JvmPromptBuilder
 import com.xebia.functional.xef.prompt.Prompt

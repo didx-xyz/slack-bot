@@ -7,7 +7,7 @@ import io.circe.Decoder
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
-import slackBotLambda.AiHandler
+import ai.AiHandler
 import sttp.client4.*
 import ujson.Value.Value
 
