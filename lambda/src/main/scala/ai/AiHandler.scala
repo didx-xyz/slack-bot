@@ -1,29 +1,14 @@
 package ai
 
-import com.xebia.functional.xef.prompt.JvmPromptBuilder
+import com.xebia.functional.xef.prompt.PromptBuilder
 import com.xebia.functional.xef.prompt.Prompt
 import com.xebia.functional.xef.scala.conversation.*
 import com.xebia.functional.xef.store.ConversationId
 import scala.collection.mutable
-import com.xebia.functional.xef.prompt.PromptBuilder
 import ai.model.OnboardingResult
+import ai.model.AgentScript
 
 object AiHandler {
-  private def createBuilder(): PromptBuilder = {
-    // Describe AI agent's assignment
-    new JvmPromptBuilder()
-      .addSystemMessage(
-        "You are an onboarding assistant. " +
-          "If you receive a first message from a user, your job is ask for " +
-          "the following info: " +
-          "Name; Email; Cellphone. " +
-          "Be friendly." +
-          "If they only give one attribute at a time, that's fine, just remind " +
-          "them until you have all 3 fields." +
-          "If a user says no, they don't want to give their email or cellphone, then that is fine, but we at least need a name"
-      )
-  }
-
   // Define a map from conversationId to JvmPromptBuilder
   private val builders: mutable.Map[String, PromptBuilder] = mutable.Map()
 
@@ -32,7 +17,7 @@ object AiHandler {
     // Get the builder for this conversationId, or create a new one if it doesn't exist
     val builder = builders.getOrElseUpdate(
       conversationId,
-      createBuilder()
+      AgentScript.createOnboardingBuilder()
     )
 
     // Add the user message to the builder
