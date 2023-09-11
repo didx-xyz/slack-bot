@@ -7,9 +7,10 @@ import io.circe.Decoder
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
-import ai.AiHandler
 import sttp.client4.*
 import ujson.Value.Value
+import ai.AiHandler
+import ai.handler.Opportunities
 
 import java.net.URLDecoder
 import scala.util.Try
@@ -32,7 +33,7 @@ object SlackHandler {
       case "message"     => handleMessage(event)
       case "/hello"      => handleHelloCommand(event)
       case "/file"       => handleFileCommand(event)
-      case "/create-did" => handleCreateDidCommand(event)
+      case "/create-did" => Opportunities.fetchData() // handleCreateDidCommand(event)
       case _             => IO.pure(Output("Unknown command"))
     }
   }
