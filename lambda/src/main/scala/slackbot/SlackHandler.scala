@@ -1,4 +1,4 @@
-package slackBotLambda
+package slackbot
 
 import cats.data.EitherT
 import cats.effect.IO

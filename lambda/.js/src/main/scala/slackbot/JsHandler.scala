@@ -1,4 +1,4 @@
-package slackBotLambda
+package slackbot
 
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime

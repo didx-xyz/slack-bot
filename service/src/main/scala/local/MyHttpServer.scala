@@ -17,7 +17,7 @@ import org.http4s.implicits.*
 import org.http4s.server.middleware.ErrorAction
 import org.http4s.server.middleware.ErrorHandling
 import org.http4s.server.middleware.Logger
-import slackBotLambda.SlackHandler
+import slackbot.SlackHandler
 
 object MyHttpServer extends IOApp.Simple {
   val run = runServer
