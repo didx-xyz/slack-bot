@@ -16,6 +16,7 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
   .enablePlugins(UniversalPlugin)
   .settings(
     name              := "lambda",
+    scalacOptions ++= Seq("-Xmax-inlines", "50"),
     libraryDependencies ++= Seq(
       "org.typelevel"                 %%% "cats-effect"       % "3.5.1",
       "com.softwaremill.sttp.client4" %%% "core"              % "4.0.0-M4",
