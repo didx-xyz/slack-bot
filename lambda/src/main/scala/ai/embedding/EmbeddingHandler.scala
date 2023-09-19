@@ -9,6 +9,8 @@ import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore
 import dev.langchain4j.model.embedding.EmbeddingModel
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel
 import dev.langchain4j.data.segment.TextSegment
+import dev.langchain4j.data.document.Metadata
+import ai.model.Opportunity
 import java.time.Duration
 
 object EmbeddingHandler {
@@ -57,8 +59,18 @@ object EmbeddingHandler {
     storeEmbedding(embedding, input)
   }
 
-  def getAndStoreAll(inputList: List[String]): Unit = {
-    storeAllEmbeddings(embedAll(inputList))
+  def getAndStoreAll(opportunities: List[Opportunity]): Unit = {
+    val textSegments: List[TextSegment] = opportunities.map { opportunity =>
+      val metadata = Metadata()
+        .add("id", opportunity.id)
+        .add("title", opportunity.title)
+        .add("organisationName", opportunity.organisationName)
+
+      TextSegment.from(opportunity.description.take(256), metadata)
+    }
+
+    val embeddings: java.util.List[Embedding] = embedAll(textSegments.asJava)
+    storeAllEmbeddings(embeddings)
   }
 
   def findMostRelevantFromQuery(
