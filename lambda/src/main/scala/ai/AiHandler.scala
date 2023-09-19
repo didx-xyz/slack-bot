@@ -22,8 +22,12 @@ object AiHandler {
         val trimInput                                   = input.split("query:").last
         val embeddingMatch: EmbeddingMatch[TextSegment] =
           EmbeddingHandler.findMostRelevantFromQuery(trimInput)
-        val response                                    =
-          s"Got embedding match with: ${embeddingMatch.embedded().text()}, with score: ${embeddingMatch.score()}"
+
+        val response =
+          "Got embedding match with: " +
+            s"score = ${embeddingMatch.score()}, " +
+            s"embedded = ${embeddingMatch.embedded()}, " +
+            s"embeddingId = ${embeddingMatch.embeddingId()}"
         response
       }
       case ChatState.Done                  => ???
