@@ -30,6 +30,13 @@
         "url": "${WEBHOOK_URL}/commands",
         "description": "Create did with CloudAPI",
         "should_escape": false
+      },
+      {
+        "command": "/test-method",
+        "url": "${WEBHOOK_URL}/commands",
+        "description": "Run test method",
+        "should_escape": false
+      },
       }
     ]
   },
