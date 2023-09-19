@@ -33,9 +33,8 @@ object EmbeddingHandler {
     embeddingModel.embed(input)
   }
 
-  def embedAll(inputList: List[String]): java.util.List[Embedding] = {
-    val inputAsTextSegments: java.util.List[TextSegment] = inputList.map(TextSegment.from).asJava
-    embeddingModel.embedAll(inputAsTextSegments)
+  def embedAll(inputList: java.util.List[TextSegment]): java.util.List[Embedding] = {
+    embeddingModel.embedAll(inputList)
   }
 
   def storeEmbedding(embedding: Embedding): Unit = {
