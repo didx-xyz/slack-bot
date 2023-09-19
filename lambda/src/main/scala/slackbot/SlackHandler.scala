@@ -7,9 +7,13 @@ import io.circe.Decoder
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
-import ai.AiHandler
 import sttp.client4.*
 import ujson.Value.Value
+import ai.AiHandler
+import ai.handler.Opportunities
+import ai.model.Opportunity
+import ai.embedding.EmbeddingHandler
+import ai.model.ChatState
 
 import java.net.URLDecoder
 import scala.util.Try
@@ -28,12 +32,21 @@ object SlackHandler {
     scribe.info(s"Received call: ${event.body}")
     val eventType = parseEvent(event)
     eventType match {
-      case `verifyUrl`   => handleChallengeRequest(event)
-      case "message"     => handleMessage(event)
-      case "/hello"      => handleHelloCommand(event)
-      case "/file"       => handleFileCommand(event)
-      case "/create-did" => handleCreateDidCommand(event)
-      case _             => IO.pure(Output("Unknown command"))
+      case `verifyUrl`            => handleChallengeRequest(event)
+      case "message"              => handleMessage(event)
+      case "/hello"               => handleHelloCommand(event)
+      case "/file"                => handleFileCommand(event)
+      case "/create-did"          => handleCreateDidCommand(event)
+      case "/test-method"         => ???
+      case "/fetch-opportunities" =>
+        for {
+          opps <- Opportunities.fetchOpportunities()
+        } yield {
+          EmbeddingHandler.getAndStoreAll(opps)
+          scribe.info("Stored all opportunity embeddings")
+          Output("Stored embeddings")
+        }
+      case _                      => IO.pure(Output("Unknown command"))
     }
   }
 
@@ -122,7 +135,9 @@ object SlackHandler {
                       parsedJson.hcursor.downField("event").downField("text").as[String].toOption,
                       Output("Error")
                     )
-      message     = AiHandler.getAiResponse(input, channelId)
+      state       = if (input.startsWith("query:")) { ChatState.QueryingOpportunities }
+                    else ChatState.Onboarding
+      message     = AiHandler.getAiResponse(input, channelId, state)
       sendResult <- sendDirectMessage(channelId, message, botToken)
       _           = scribe.info(s"Slack response: ${sendResult}")
     } yield {
