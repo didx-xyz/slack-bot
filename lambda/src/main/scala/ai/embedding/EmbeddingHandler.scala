@@ -31,6 +31,11 @@ object EmbeddingHandler {
     embeddingModel.embed(input)
   }
 
+  def embedAll(inputList: List[String]): java.util.List[Embedding] = {
+    val inputAsTextSegments: java.util.List[TextSegment] = inputList.map(TextSegment.from).asJava
+    embeddingModel.embedAll(inputAsTextSegments)
+  }
+
   def storeEmbedding(embedding: Embedding): Unit = {
     embeddingStore.add(embedding)
   }
@@ -43,16 +48,23 @@ object EmbeddingHandler {
     embeddingStore.add(embedding, embedded)
   }
 
+  def storeAllEmbeddings(embeddings: java.util.List[Embedding]): Unit = {
+    embeddingStore.addAll(embeddings)
+  }
+
   def getAndStoreEmbedding(input: String): Unit = {
     val embedding = getEmbedding(input)
     storeEmbedding(embedding, input)
   }
 
   def getAndStoreAll(inputList: List[String]): Unit = {
-    inputList.foreach(getAndStoreEmbedding)
+    storeAllEmbeddings(embedAll(inputList))
   }
 
-  def findMostRelevantFromQuery(queryText: String, maxResults: Int = 1): EmbeddingMatch[TextSegment] = {
+  def findMostRelevantFromQuery(
+      queryText: String,
+      maxResults: Int = 1
+  ): EmbeddingMatch[TextSegment] = {
     val queryEmbedding: Embedding                   = embeddingModel.embed(queryText.take(256))
     val relevant: List[EmbeddingMatch[TextSegment]] =
       embeddingStore.findRelevant(queryEmbedding, maxResults).asScala.toList
