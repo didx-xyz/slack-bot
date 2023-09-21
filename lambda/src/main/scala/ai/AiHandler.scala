@@ -5,6 +5,7 @@ import ai.handler.OnboardingHandler
 import dev.langchain4j.data.segment.TextSegment
 import ai.embedding.EmbeddingHandler
 import dev.langchain4j.store.embedding.EmbeddingMatch
+
 object AiHandler {
 
   def getAiResponse(
@@ -19,7 +20,8 @@ object AiHandler {
     state match
       case ChatState.Onboarding            => OnboardingHandler.getResponse(input, conversationId)
       case ChatState.QueryingOpportunities => {
-        val trimInput                                   = input.split("query:").last
+        val trimInput = input.split("query:").last
+
         val embeddingMatch: EmbeddingMatch[TextSegment] =
           EmbeddingHandler.findMostRelevantFromQuery(trimInput)
 
