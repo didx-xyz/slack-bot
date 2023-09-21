@@ -53,23 +53,30 @@ object EmbeddingHandler {
     embeddingStore.addAll(embeddings)
   }
 
+  def storeAllEmbeddings(
+      embeddings: java.util.List[Embedding],
+      textSegment: java.util.List[TextSegment]
+  ): Unit = {
+    embeddingStore.addAll(embeddings, textSegment)
+  }
+
   def getAndStoreEmbedding(input: String): Unit = {
     val embedding = getEmbedding(input)
     storeEmbedding(embedding, input)
   }
 
   def getAndStoreAll(opportunities: List[Opportunity]): Unit = {
-    val textSegments: List[TextSegment] = opportunities.map { opportunity =>
+    val textSegments: java.util.List[TextSegment] = opportunities.map { opportunity =>
       val metadata = Metadata()
         .add("id", opportunity.id)
         .add("title", opportunity.title)
         .add("organisationName", opportunity.organisationName)
 
       TextSegment.from(opportunity.description.take(256), metadata)
-    }
+    }.asJava
 
-    val embeddings: java.util.List[Embedding] = embedAll(textSegments.asJava)
-    storeAllEmbeddings(embeddings)
+    val embeddings: java.util.List[Embedding] = embedAll(textSegments)
+    storeAllEmbeddings(embeddings, textSegments)
   }
 
   def findMostRelevantFromQuery(
