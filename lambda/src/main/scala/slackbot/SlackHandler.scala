@@ -42,6 +42,7 @@ object SlackHandler {
         for {
           opps <- Opportunities.fetchOpportunities()
         } yield {
+          scribe.info(s"Fetched opportunities: $opps")
           EmbeddingHandler.getAndStoreAll(opps)
           scribe.info("Stored all opportunity embeddings")
           Output("Stored embeddings")
