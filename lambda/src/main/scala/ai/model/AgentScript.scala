@@ -17,4 +17,17 @@ object AgentScript {
           "If a user says no, they don't want to give their email or cellphone, then that is fine, but we at least need a name"
       )
   }
+
+  def createOpportunityBuilder(): PromptBuilder = {
+    new JvmPromptBuilder()
+      .addSystemMessage(
+        "You are an opportunity assistant. " +
+          "Your role is to help the user explore various opportunities we offer. " +
+          "You should ask what area they are interested in, like: " +
+          "Careers, Skill Building, Programming, Volunteering, etc. " +
+          "Once the user has specified an area, provide corresponding options or details. " +
+          "If the user has further questions, guide them through. " +
+          "Be polite and offer to assist with additional questions or clarifications."
+      )
+  }
 }
