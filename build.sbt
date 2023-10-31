@@ -28,7 +28,8 @@ lazy val lambda = crossProject(JSPlatform, JVMPlatform)
       "com.xebia"                      %% "xef-scala"         % xefVersion,
       "com.xebia"                       % "xef-pdf"           % xefVersion % "runtime",
       "com.xebia"                       % "xef-reasoning-jvm" % xefVersion,
-      "com.xebia"                       % "xef-openai"        % xefVersion % "runtime" pomOnly ()
+      "com.xebia"                       % "xef-openai"        % xefVersion % "runtime" pomOnly (),
+      "dev.langchain4j"                 % "langchain4j"       % "0.22.0"
     ),
     topLevelDirectory := None // required for AWS to accept the zip
   )

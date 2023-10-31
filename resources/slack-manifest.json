@@ -30,6 +30,18 @@
         "url": "${WEBHOOK_URL}/commands",
         "description": "Create did with CloudAPI",
         "should_escape": false
+      },
+      {
+        "command": "/test-method",
+        "url": "${WEBHOOK_URL}/commands",
+        "description": "Run test method",
+        "should_escape": false
+      },
+      {
+        "command": "/fetch-opportunities",
+        "url": "${WEBHOOK_URL}/commands",
+        "description": "Fetch, embed, and store Yoma opportunities",
+        "should_escape": false
       }
     ]
   },

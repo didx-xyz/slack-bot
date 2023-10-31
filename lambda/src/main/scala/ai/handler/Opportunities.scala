@@ -12,14 +12,13 @@ import scala.util.chaining.scalaUtilChainingOps
 import io.circe.parser.decode
 import io.circe.generic.auto._
 import ai.model.Opportunity
-// import ai.model.decodeZonedDateTime
 import io.circe
 
 object Opportunities {
 
   val backend = DefaultFutureBackend()
 
-  def fetchData(): IO[String] = {
+  def fetchOpportunities(): IO[List[Opportunity]] = {
     val request = basicRequest
       .get(uri"https://api.yoma.world/api/v1/opportunities")
       .header("accept", "application/json")
@@ -47,25 +46,29 @@ object Opportunities {
       decompressedData = decompressGzip(decodedData)
     } yield decompressedData
 
-    val listOfOpportunities = decodedOpportunities.value.flatMap {
-      case Right(successValue) =>
-        val parsed = decode[List[Opportunity]](successValue)
-        val r      = s"Success: $parsed"
+    val listOfOpportunities: IO[List[Opportunity]] = decodedOpportunities.value.flatMap {
+      case Right(decodeSuccess) =>
+        val parsed: Either[circe.Error, List[Opportunity]] =
+          decode[List[Opportunity]](decodeSuccess)
+        IO.fromEither(parsed).handleErrorWith { parseError =>
+          scribe.warn(s"Opportunities parsing error: $parseError")
+          IO.pure(List.empty[Opportunity])
+        }
+
+      case Left(decodeError) =>
+        val r = s"Opportunities decoding error: $decodeError"
         scribe.warn(r)
-        IO.pure(r)
-      case Left(errorValue)    =>
-        val r = s"Error: $errorValue"
-        scribe.warn(r)
-        IO.pure(r)
+        IO.pure(List.empty[Opportunity])
     }
+
     listOfOpportunities
   }
 
-  def decodeBase64(encoded: String): Array[Byte] = {
+  private def decodeBase64(encoded: String): Array[Byte] = {
     Base64.getDecoder.decode(encoded)
   }
 
-  def decompressGzip(compressed: Array[Byte]): String = {
+  private def decompressGzip(compressed: Array[Byte]): String = {
     val inputStream  = new GZIPInputStream(new ByteArrayInputStream(compressed))
     val outputStream = new ByteArrayOutputStream()
 
