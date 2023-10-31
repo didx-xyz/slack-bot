@@ -65,15 +65,34 @@ object EmbeddingHandler {
     storeEmbedding(embedding, input)
   }
 
-  def getAndStoreAll(opportunities: List[Opportunity]): Unit = {
-    val textSegments: java.util.List[TextSegment] = opportunities.map { opportunity =>
-      val metadata = Metadata()
-        .add("id", opportunity.id)
-        .add("title", opportunity.title)
-        .add("organisationName", opportunity.organisationName)
+  def removeSpecialCharacters(input: String): String = {
+    input
+      .replaceAll("[^\\x00-\\x7F]", "") // emojis
+      .replaceAll("""[!?&'"]""", "")    // punctuation
+      .replaceAll(""" - """, " ")       // punctuation
+      .replaceAll("""\\s+""", " ")      // extra whitespace
+  }
 
-      TextSegment.from(opportunity.description.take(256), metadata)
-    }.asJava
+  def getAndStoreAll(opportunities: List[Opportunity]): Unit = {
+    val textSegments: java.util.List[TextSegment] = opportunities
+      .filter { opportunity =>
+        opportunity.language.contains("EN")
+      }
+      .map { opportunity =>
+        val metadata = Metadata()
+          .add("id", opportunity.id)
+          .add("title", opportunity.title)
+          .add("organisationName", opportunity.organisationName)
+
+        val opportunityEmbeddingInput: String =
+          removeSpecialCharacters(s"""${opportunity.title} ${opportunity.description}""")
+            .take(256)
+
+        scribe.info(s"Sample input: $opportunityEmbeddingInput")
+
+        TextSegment.from(opportunityEmbeddingInput, metadata)
+      }
+      .asJava
 
     val embeddings: java.util.List[Embedding] = embedAll(textSegments)
     storeAllEmbeddings(embeddings, textSegments)
