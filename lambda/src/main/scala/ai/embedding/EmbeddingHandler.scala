@@ -81,11 +81,12 @@ object EmbeddingHandler {
 
   def findMostRelevantFromQuery(
       queryText: String,
-      maxResults: Int = 1
+      maxResults: Int = 1,
+      minScore: Double = 0.7
   ): EmbeddingMatch[TextSegment] = {
     val queryEmbedding: Embedding                   = embeddingModel.embed(queryText.take(256))
     val relevant: List[EmbeddingMatch[TextSegment]] =
-      embeddingStore.findRelevant(queryEmbedding, maxResults).asScala.toList
+      embeddingStore.findRelevant(queryEmbedding, maxResults, minScore).asScala.toList
     val embeddingMatch                              = relevant.headOption
     embeddingMatch match
       case None        =>
